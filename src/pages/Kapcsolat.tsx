@@ -57,7 +57,7 @@ const contactInfo = [
   {
     icon: MapPin,
     label: "Cím",
-    value: "1234 Budapest, Példa utca 12.",
+    value: "8500 Pápa, Úrdomb utca 12.",
     href: null,
   },
   {
