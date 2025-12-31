@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Droplets } from "lucide-react";
+import { Menu, X, Droplets, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { href: "/", label: "Főoldal" },
@@ -14,6 +15,12 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsOpen(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -51,10 +58,40 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
+          {/* Desktop CTA & Auth */}
+          <div className="hidden md:flex items-center gap-3">
+            {!loading && (
+              <>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted text-sm">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground max-w-[150px] truncate">
+                        {user.email}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSignOut}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Kijelentkezés
+                    </Button>
+                  </>
+                ) : (
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/auth">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Bejelentkezés
+                    </Link>
+                  </Button>
+                )}
+              </>
+            )}
             <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link to="/kapcsolat">Időpontfoglalás</Link>
+              <Link to="/idopontfoglalas">Időpontfoglalás</Link>
             </Button>
           </div>
 
@@ -89,8 +126,38 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              
+              {!loading && (
+                <>
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
+                        <User className="w-4 h-4" />
+                        <span className="truncate">{user.email}</span>
+                      </div>
+                      <button
+                        onClick={handleSignOut}
+                        className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted text-left flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Kijelentkezés
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      to="/auth"
+                      onClick={() => setIsOpen(false)}
+                      className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      Bejelentkezés
+                    </Link>
+                  )}
+                </>
+              )}
+              
               <Button asChild className="mt-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-                <Link to="/kapcsolat" onClick={() => setIsOpen(false)}>
+                <Link to="/idopontfoglalas" onClick={() => setIsOpen(false)}>
                   Időpontfoglalás
                 </Link>
               </Button>
