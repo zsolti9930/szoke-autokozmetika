@@ -1,10 +1,45 @@
-import { useState } from "react";
 import { Phone, Mail, MapPin, Clock, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/layout/Layout";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const contactSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Név megadása kötelező")
+    .max(100, "A név maximum 100 karakter lehet")
+    .regex(/^[\p{L}\s'-]+$/u, "Érvénytelen karakterek a névben"),
+  email: z
+    .string()
+    .min(1, "Email megadása kötelező")
+    .email("Érvénytelen email cím")
+    .max(254, "Az email cím túl hosszú"),
+  phone: z
+    .string()
+    .regex(/^(\+?[0-9\s-]*)?$/, "Érvénytelen telefonszám formátum")
+    .max(20, "A telefonszám túl hosszú")
+    .optional()
+    .or(z.literal("")),
+  message: z
+    .string()
+    .min(10, "Az üzenet legalább 10 karakter legyen")
+    .max(2000, "Az üzenet maximum 2000 karakter lehet"),
+});
+
+type ContactFormData = z.infer<typeof contactSchema>;
 
 const contactInfo = [
   {
@@ -35,25 +70,18 @@ const contactInfo = [
 
 const Kapcsolat = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
+
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      message: "",
+    },
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+  const onSubmit = async (data: ContactFormData) => {
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -62,8 +90,7 @@ const Kapcsolat = () => {
       description: "Hamarosan felvesszük Önnel a kapcsolatot.",
     });
 
-    setFormData({ name: "", email: "", phone: "", message: "" });
-    setIsSubmitting(false);
+    form.reset();
   };
 
   return (
@@ -92,86 +119,100 @@ const Kapcsolat = () => {
                 <h2 className="font-serif text-2xl font-bold text-foreground mb-6">
                   Írjon nekünk
                 </h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium text-foreground">
-                      Név *
-                    </label>
-                    <Input
-                      id="name"
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
                       name="name"
-                      type="text"
-                      placeholder="Az Ön neve"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="bg-background border-border focus:border-primary"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Név *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Az Ön neve"
+                              className="bg-background border-border focus:border-primary"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium text-foreground">
-                        Email *
-                      </label>
-                      <Input
-                        id="email"
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
                         name="email"
-                        type="email"
-                        placeholder="email@pelda.hu"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="bg-background border-border focus:border-primary"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="email@pelda.hu"
+                                className="bg-background border-border focus:border-primary"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="phone" className="text-sm font-medium text-foreground">
-                        Telefon
-                      </label>
-                      <Input
-                        id="phone"
+                      <FormField
+                        control={form.control}
                         name="phone"
-                        type="tel"
-                        placeholder="+36 XX XXX XXXX"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="bg-background border-border focus:border-primary"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Telefon</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="tel"
+                                placeholder="+36 XX XXX XXXX"
+                                className="bg-background border-border focus:border-primary"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium text-foreground">
-                      Üzenet *
-                    </label>
-                    <Textarea
-                      id="message"
+                    <FormField
+                      control={form.control}
                       name="message"
-                      placeholder="Írja le, miben segíthetünk..."
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      className="bg-background border-border focus:border-primary resize-none"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Üzenet *</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Írja le, miben segíthetünk..."
+                              rows={5}
+                              className="bg-background border-border focus:border-primary resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    {isSubmitting ? (
-                      "Küldés..."
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Üzenet küldése
-                      </>
-                    )}
-                  </Button>
-                </form>
+                    <Button
+                      type="submit"
+                      disabled={form.formState.isSubmitting}
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
+                      {form.formState.isSubmitting ? (
+                        "Küldés..."
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Üzenet küldése
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
               </div>
             </div>
 
