@@ -117,6 +117,7 @@ const Idopontfoglalas = () => {
 
     try {
       const { error } = await supabase.from("appointments").insert({
+        user_id: user.id,
         customer_name: formData.customer_name.trim(),
         customer_email: formData.customer_email.trim(),
         customer_phone: formData.customer_phone.trim(),
