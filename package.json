@@ -1,8 +1,7 @@
-
+  "packageManager": "npm@10.9.2",
 {
   "name": "szoke-autokozmetika",
   "private": true,
-  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -80,5 +79,5 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19"
-  }
-}
+  },
+
